@@ -6,7 +6,7 @@ objects =  lizard.o
 test: $(objects)
 	$(CC) $(CFLAGS) -o lizard $(objects)
 
-lizard.o: lizard.c lizard.h 
+lizard.o: lizard.c
 .PHONY : clean
 clean: 
 	rm lizard $(objects)
