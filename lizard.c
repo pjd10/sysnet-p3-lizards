@@ -94,6 +94,12 @@ void * lizardThread( void * param );
  * Declare global variables here
  */
 
+//Initializing the Array of Thread Id's
+pthread_t thread[NUM_LIZARDS];//pd cb
+
+//Initializing the Semaphore
+sem_t sem;//pd cb
+
 /**************************************************/
 /* Please leave these variables alone.  They are  */
 /* used to check the proper functioning of your   */
@@ -105,10 +111,6 @@ int numCrossingMonkeyGrass2Sago;
 int debug;
 int running;
 /**************************************************/
-
-
-
-
 
 
 /*
@@ -124,8 +126,8 @@ int main(int argc, char **argv)
   /*
    * Declare local variables
    */
-
-
+	int i = 0;//pd cb
+	int num = 0;//pd cb
 
 
   /*
@@ -155,17 +157,17 @@ int main(int argc, char **argv)
    * Initialize locks and/or semaphores
    */
 
-
+	sem_init(&sem, 0, MAX_LIZARD_CROSSING);//pd cb
 
 
   /*
    * Create NUM_LIZARDS lizard threads
    */
-
-
-
-
-
+	for(i = 0; i < NUM_LIZARDS; i++)//pd cb
+	{
+		num++;
+		pthread_create(&thread[i], NULL, &lizardThread, (void *)&num);//pd cb
+	}
 
   /*
    * Now let the world run for a while
@@ -182,17 +184,16 @@ int main(int argc, char **argv)
   /*
    * Wait until all threads terminate
    */
-
-
-
-
-
+	for(i = 0; i < NUM_LIZARDS; i++)//pd cb
+	{
+		pthread_join(thread[i], NULL);//pd cb
+	}
 
    /*
     * Delete the locks and semaphores
     */
 
-
+	sem_destroy(&sem);//pd cb
 
   /*
    * Exit happily
@@ -230,7 +231,8 @@ void made_it_2_sago(int num);
  */
 void * lizardThread( void * param )
 {
-  int num = (int)param;
+  int *n = (int *)param;//pd cb
+	int num = *n;//pd cb
 
   if (debug)
     {
@@ -248,22 +250,21 @@ void * lizardThread( void * param )
        * are already completed - see the comments.
        */
 
+		lizard_sleep(num);//pd cb
 
+		sago_2_monkeyGrass_is_safe(num);//pd cb
 
+		cross_sago_2_monkeyGrass(num);//pd cb
 
+		made_it_2_monkeyGrass(num);//pd cb
 
+		lizard_eat(num);//pd cb
 
+		monkeyGrass_2_sago_is_safe(num);//pd cb
 
+		cross_monkeyGrass_2_sago(num);//pd cb
 
-
-
-
-
-
-
-
-
-
+		made_it_2_sago(num);//pd cb
 
     }
 
@@ -320,7 +321,7 @@ void sago_2_monkeyGrass_is_safe(int num)
     }
 
 
-
+	sem_wait(&sem);//pd cb
 
 
 
@@ -407,7 +408,7 @@ void made_it_2_monkeyGrass(int num)
     }
 
 
-
+	sem_post(&sem);//pd cb
 
 
 }
@@ -465,7 +466,7 @@ void monkeyGrass_2_sago_is_safe(int num)
     }
 
 
-
+	sem_wait(&sem);//pd cb
 
 
   if (debug)
@@ -552,7 +553,7 @@ void made_it_2_sago(int num)
     }
 
 
-
+	sem_post(&sem);//pd cb
 
 
 }
