@@ -1,3 +1,13 @@
+/** @file   lizard.c
+ *  @brief  File for running the lizard program
+ *
+ *  @author Paul Davila (pjd10)
+ *  @author Christopher Blaylock (cdb56)
+ *  @class	COP4634
+ *  @assignment	Project 3
+ *
+ *  @bug    No known bugs
+ */
 /***************************************************************/
 /*                                                             */
 /* lizard.c                                                    */
@@ -62,7 +72,7 @@ void * lizardThread( void * param );
  * be simulated.  
  * Try 30 for development and 120 for more thorough testing.
  */
-#define WORLDEND             30
+#define WORLDEND             120
 
 /*
  * Number of lizard threads to create
@@ -99,6 +109,7 @@ pthread_t thread[NUM_LIZARDS];//pd cb
 
 //Initializing the Semaphore
 sem_t sem;//pd cb
+sem_t lock;//pd cb
 
 /**************************************************/
 /* Please leave these variables alone.  They are  */
@@ -127,7 +138,8 @@ int main(int argc, char **argv)
    * Declare local variables
    */
 	int i = 0;//pd cb
-	int num = 0;//pd cb
+
+	int num[NUM_LIZARDS];//pd cb
 
 
   /*
@@ -159,16 +171,19 @@ int main(int argc, char **argv)
 
 	sem_init(&sem, 0, MAX_LIZARD_CROSSING);//pd cb
 
+	sem_init(&lock, 0, 1);//pd cb
+
 
   /*
    * Create NUM_LIZARDS lizard threads
    */
 	for(i = 0; i < NUM_LIZARDS; i++)//pd cb
 	{
-		num++;
-		pthread_create(&thread[i], NULL, &lizardThread, (void *)&num);//pd cb
-	}
+		num[i] = i+1;//pd cb
 
+		pthread_create(&thread[i], NULL, &lizardThread, (void *)&num[i]);//pd cb
+
+	}
   /*
    * Now let the world run for a while
    */
@@ -194,6 +209,8 @@ int main(int argc, char **argv)
     */
 
 	sem_destroy(&sem);//pd cb
+
+	sem_destroy(&lock);//pd cb
 
   /*
    * Exit happily
@@ -231,8 +248,13 @@ void made_it_2_sago(int num);
  */
 void * lizardThread( void * param )
 {
-  int *n = (int *)param;//pd cb
-	int num = *n;//pd cb
+
+	//Getting the lizard's number
+	sem_wait(&lock);//pd cb
+
+  	int num = *((int *)param);//pd cb
+
+	sem_post(&lock);//pd cb
 
   if (debug)
     {
@@ -320,7 +342,7 @@ void sago_2_monkeyGrass_is_safe(int num)
       fflush( stdout );
     }
 
-
+	//Decrementing the semaphore's counter
 	sem_wait(&sem);//pd cb
 
 
@@ -407,7 +429,7 @@ void made_it_2_monkeyGrass(int num)
       fflush( stdout );
     }
 
-
+	//Incrementing the semaphore's counter
 	sem_post(&sem);//pd cb
 
 
@@ -465,7 +487,7 @@ void monkeyGrass_2_sago_is_safe(int num)
       fflush( stdout );
     }
 
-
+	//Decrementing the semaphore's counter
 	sem_wait(&sem);//pd cb
 
 
@@ -552,8 +574,10 @@ void made_it_2_sago(int num)
       fflush( stdout );
     }
 
-
+	//Incrementing the semaphore's counter
 	sem_post(&sem);//pd cb
 
 
 }
+
+
